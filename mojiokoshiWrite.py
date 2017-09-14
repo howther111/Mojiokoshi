@@ -2,12 +2,16 @@
 # coding: UTF-8
 import requests
 import os
-import time
 import argparse
+import numpy as np
+import time
+import wave
 
 GOOGLE_APIKEY = 'AIzaSyAI2lg0FPozbJCPp8qGumAObRMJw58m5aw'
 VOICE_REC_PATH = ''
 FILE_NUM = 1
+SILENT_VOLUME = 14400
+SILENT_CHECK = False
 
 def recognize(file_number):
     file_num_str = ''
@@ -22,11 +26,31 @@ def recognize(file_number):
     else:
         file_num_str = '-' + str(file_number)
 
-    voice_file = VOICE_REC_PATH + file_num_str + '.wav'
-    print(voice_file + ' recognizing...')
-    f = open(voice_file, 'rb')
-    voice = f.read()
-    f.close()
+    if SILENT_CHECK:
+        voice_file = VOICE_REC_PATH + file_num_str + '.wav'
+        print(voice_file + ' recognizing...')
+        f = open(voice_file, 'rb')
+        voice = f.read()
+        f.close()
+
+        # read wav file
+        wav = wave.open(voice_file, "r")
+        # move to head of the audio file
+        wav.rewind()
+        # read to buffer as binary format
+        nframe = wav.getnframes()
+        buf = wav.readframes(nframe)
+        wav.close()
+
+        channels = wav.getnchannels()
+        if (channels == 1):
+            audio_data = np.frombuffer(buf, dtype="int16")
+        elif (channels == 2):
+            audio_data = np.frombuffer(buf, dtype="int32")
+
+        z1 = np.absolute(audio_data[0:-1])
+        if is_silence(z1):
+            return '#SILENT'
 
     url = 'https://www.google.com/speech-api/v2/recognize?xjerr=1&client=chromium&'\
         'lang=ja-JP&maxresults=10&pfilter=0&xjerr=1&key=' + GOOGLE_APIKEY  
@@ -40,8 +64,8 @@ def recognize(file_number):
         return '#ERROR'
         
     print('results:', reply)
-    
     objs = reply.split(os.linesep)
+
     for obj in objs:
         if not obj:
             continue
@@ -57,6 +81,7 @@ def recognize(file_number):
         return obj
     return ""
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='WAV ファイル分割プログラム')
     parser.add_argument('-i', action='store', dest='file_name',
@@ -67,6 +92,14 @@ def parse_args():
 
     results = parser.parse_args()
     return results
+
+
+def is_silence(iterable):
+    if max(iterable) < SILENT_VOLUME:
+        return True
+    else:
+        return False
+
 
 def current_milli_time():
     return int(round(time.time() * 1000))
@@ -82,15 +115,21 @@ if __name__ == '__main__':
         print('recognized:' + str(current_milli_time() - t0) + 'ms')
         if message == '#CONN_ERR':
             print('internet not available')
-            message = ''
+            message = '※インターネットエラー：' + str(file_number) + '\n'
+            print('your words:' + message)
         elif message == '#ERROR':
             print('voice recognizing failed')
-            message = ''
+            message = '※音声認識エラー：' + str(file_number) + '\n'
+            print('your words:' + message)
+        elif message == '#SILENT':
+            print('voice is silence')
+            message = '\n'
+            print('your words: no message')
         else:
             if not message == '{"result":[]}':
                 if message.find('<!DOCTYPE html>') != -1:
                     message = message + '\n'
-                message = '※サーバーエラー：' + str(file_number)
+                message = '※サーバーエラー：' + str(file_number) + '\n'
                 print('your words:' + message)
             else:
                 message = '\n'
@@ -107,3 +146,5 @@ if __name__ == '__main__':
 
         # テキストファイルとの接続を切る
         writer.close()
+
+        # time.sleep(1)

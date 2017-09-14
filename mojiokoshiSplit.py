@@ -8,6 +8,9 @@ import sys
 import os
 import argparse
 
+SPLIT_VOLUME = 2048
+CHECK_FRAME = 441
+
 class Audio:
     def __init__(self, filename):
         self.filename = filename
@@ -46,7 +49,7 @@ class Audio:
         return False
 
     def is_silence(self, iterable):
-        if max(iterable) < 4096:
+        if max(iterable) < SPLIT_VOLUME:
             return True
         else:
             return False
@@ -80,7 +83,7 @@ class Audio:
         print('総時間：' + str(int(self.nframe / size)) + '秒')
 
         while True:
-            end = end + 441
+            end = end + CHECK_FRAME
             # end = start + int(count_silence + 1) * silence_size
 
             if not self.is_split(y[start:self.nframe], size):
@@ -90,7 +93,7 @@ class Audio:
                 second = end / size
                 print(str(second) + '秒まで処理')
 
-            z1 = np.absolute(y[start:end])
+            # z1 = np.absolute(y[start:end])
             check_silence = int(end + silence_size)
             z2 = np.absolute(y[end:check_silence])
 
@@ -118,7 +121,7 @@ class Audio:
         start = 0
         for end in segment_points:
             version = "{:05d}".format(count)
-            w = wave.Wave_write(filename+"/"+ filename+"-"+version+".wav")
+            w = wave.Wave_write(filename+"/" + filename+"-"+version+".wav")
             w.setnchannels(self.channels)
             w.setsampwidth(self.sampwidth)
             w.setframerate(self.rframe)
@@ -153,11 +156,11 @@ try:
 
     #add progress bar, time_term, 無音term
     audio = Audio(args.file_name)
-    audio_data  = audio.read()
+    audio_data = audio.read()
     # time = audio.audio_time()
-    if args.type=="equal":
+    if args.type == "equal":
         segment_points = audio.split_equal(audio_data, args.split_num)
-    elif args.type=="optional":
+    elif args.type == "optional":
         segment_points = audio.split(audio_data, args.time, args.slience_time)
 
     output = os.path.splitext(os.path.basename(args.file_name))
