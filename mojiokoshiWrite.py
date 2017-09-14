@@ -7,9 +7,11 @@ import numpy as np
 import time
 import wave
 
-GOOGLE_APIKEY = 'AIzaSyAI2lg0FPozbJCPp8qGumAObRMJw58m5aw'
+GOOGLE_APIKEY = 'AIzaSyCExgexBePYmp1sCXwIjdhK6TLXU92b0Ds'
 VOICE_REC_PATH = ''
 FILE_NUM = 1
+# FILE_START_NUM = 0
+# FILE_END_NUM = 1
 SILENT_VOLUME = 14400
 SILENT_CHECK = False
 
@@ -73,8 +75,9 @@ def recognize(file_number):
         obj = obj.replace('{"result":[]}\n{"result":[{"alternative":[{"transcript":"', '')
         index = obj.find('","confidence"')  # indexは1(2文字目)
         obj = obj[0:index]
-        index = obj.find('"},{"transcript"')
-        obj = obj[0:index]
+        if not obj.find('"},{"transcript"') == -1:
+            index = obj.find('"},{"transcript"')
+            obj = obj[0:index]
 
         if len(obj) == 0:
             continue
@@ -127,16 +130,17 @@ if __name__ == '__main__':
             print('your words: no message')
         else:
             if not message == '{"result":[]}':
-                if message.find('<!DOCTYPE html>') != -1:
+                if message.find('<!DOCTYPE html>') == -1:
                     message = message + '\n'
-                message = '※サーバーエラー：' + str(file_number) + '\n'
+                else:
+                    message = '※サーバーエラー：' + str(file_number) + '\n'
                 print('your words:' + message)
             else:
                 message = '\n'
                 print('your words: no message')
 
-        # sample.txtが存在しない場合は、自動的に新規作成される。
-        writer = open('answer.txt', 'a')
+        # 自動的に新規作成されるかチェック。
+        writer = open(args.file_name + '_text.txt', 'a')
 
         # テキストファイルへの書き込み
         writer.write(message)

@@ -1,0 +1,59 @@
+音声自動認識システム
+①音声認識部分作成
+②分割処理部分作成
+③解析結果アウトプット部分作成
+
+音声ファイル作成（wav, 44100Hz）
+DVD Video Soft Free Studio 使用
+↓
+音声解析
+mojiokoshiSplit.py
+↓
+wavファイル分割（0.1秒の沈黙が条件？）
+mojiokoshiSplit.py
+↓
+発話解析
+mojiokoshiWrite.py
+↓
+文字情報
+mojiokoshiWrite.py
+↓
+文章出力
+answer.txt
+
+①音声ファイルの準備（44100Hz, wav形式）
+②フォルダの作成（test1.wavならtest1）
+③answer.txt準備（空白化）
+④分割処理（分割うまくできているかチェック）
+⑤文字起こし処理
+
+【PyCharm】
+C:\Users\atsuk\PycharmProjects\study\mojiokoshiSplit.py
+-i meiga8.wav -type optional -t 2.0 -st 0.2 -mt 4.0
+
+C:\Users\atsuk\PycharmProjects\study\mojiokoshiWrite.py
+-i meiga8 -n 883
+
+【コマンドライン】
+cd C:\Users\atsuk\PycharmProjects\study
+python mojiokoshiSplit.py -i meiga8.wav -type optional -t 2.0 -st 0.2 -mt 4.0
+python mojiokoshiWrite.py -i meiga8 -n 883
+
+【料金】
+Google Cloud Speech API
+1ファイル0.7円
+meiga8.wav 1150ファイルの場合
+原価800円
+wav 1時間1000円が原価
+失敗した場合を鑑み、1時間5000円が適当？
+
+※1日500ファイルまでしか処理できないが、privateのspeech APIでも代用は可能
+
+【サービス】
+成果物：テキストファイル
+基本料金：2000円
+追加料金：1時間以上の場合：15分ごとに+500円（切り上げ）
+
+【注意事項】
+※早口の人はうまくいかない場合多い
+※工場の中などでは雑音で分割がうまくいかない
