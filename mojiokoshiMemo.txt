@@ -34,8 +34,9 @@ C:\Users\atsuk\PycharmProjects\studyy\mojiokoshi\mojiokoshiWrite.py
 
 ÅyÉRÉ}ÉìÉhÉâÉCÉìÅz
 cd C:\Users\atsuk\PycharmProjects\study\mojiokoshi
-python mojiokoshiSplit.py -i Test0080.wav -type optional -t 1.0 -st 0.2 -mt 5.0 -noise 4
-python mojiokoshiWrite.py -i 170824_0078 -n 10
+python mojiokoshiSplit.py -i 170824_0078.wav -type optional -t 1.0 -st 0.2 -mt 5.0 -noise 4
+python mojiokoshiWrite.py -i 170824_0078 -n 5
+python mojiokoshiWriteCloud.py -i 170824_0078 -n 8
 
 Åyóøã‡Åz
 Google Cloud Speech API

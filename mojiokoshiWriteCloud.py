@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 # coding: UTF-8
-import requests
 import os
+import io
 import argparse
 import numpy as np
 import time
 import wave
 
-GOOGLE_APIKEY = 'AIzaSyAFPQ1Y-osuopXLP4H9aMrqQdrM0_wfPck'
+# Imports the Google Cloud client library
+from google.cloud import speech
+from google.cloud.speech import enums
+from google.cloud.speech import types
+
+GOOGLE_APIKEY = 'AIzaSyCExgexBePYmp1sCXwIjdhK6TLXU92b0Ds'
 VOICE_REC_PATH = ''
 FILE_NUM = 1
 # FILE_START_NUM = 0
@@ -16,6 +21,7 @@ SILENT_VOLUME = 14400
 SILENT_CHECK = False
 
 def recognize(file_number):
+
     file_num_str = ''
     if file_number < 10:
         file_num_str = '-0000' + str(file_number)
@@ -30,9 +36,9 @@ def recognize(file_number):
 
     voice_file = VOICE_REC_PATH + file_num_str + '.wav'
     print(voice_file + ' recognizing...')
-    f = open(voice_file, 'rb')
-    voice = f.read()
-    f.close()
+    # f = open(voice_file, 'rb')
+    # voice = f.read()
+    # f.close()
 
     if SILENT_CHECK:
         # read wav file
@@ -54,35 +60,59 @@ def recognize(file_number):
         if is_silence(z1):
             return '#SILENT'
 
-    url = 'https://www.google.com/speech-api/v2/recognize?xjerr=1&client=chromium&'\
-        'lang=ja-JP&maxresults=10&pfilter=0&xjerr=1&key=' + GOOGLE_APIKEY
-    hds = {'Content-type': 'audio/l16; rate=44100'}
+    # Instantiates a client
+    client = speech.SpeechClient()
+
+    # The name of the audio file to transcribe
+    file_name = os.path.join(
+        os.path.dirname(__file__),
+        voice_file)
+
+    # Loads the audio into memory
+    with io.open(file_name, 'rb') as audio_file:
+        content = audio_file.read()
+        audio = types.RecognitionAudio(content=content)
+
+    config = types.RecognitionConfig(
+        encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+        sample_rate_hertz=44100,
+        language_code='ja-JP')
+
+    # url = 'https://www.google.com/speech-api/v2/recognize?xjerr=1&client=chromium&'\
+    #     'lang=ja-JP&maxresults=10&pfilter=0&xjerr=1&key=' + GOOGLE_APIKEY
+    # hds = {'Content-type': 'audio/l16; rate=44100'}
     
     try:    
-        reply = requests.post(url, data=voice, headers=hds).text
+        reply = client.recognize(config, audio)
     except IOError:
         return '#CONN_ERR'
     except:
         return '#ERROR'
         
     print('results:', reply)
-    objs = reply.split(os.linesep)
+    if not reply.results:
+        return '#SILENT'
 
-    for obj in objs:
-        if not obj:
+    if len(reply.results) == 0:
+        return '#SILENT'
+
+    alternatives = reply.results[0].alternatives
+    # objs = reply.split(os.linesep)
+
+    for alternative in alternatives:
+        if not alternative:
             continue
 
-        obj = obj.replace('{"result":[]}\n{"result":[{"alternative":[{"transcript":"', '')
-        index = obj.find('","confidence"')  # indexは1(2文字目)
-        obj = obj[0:index]
-        if not obj.find('"},{"transcript"') == -1:
-            index = obj.find('"},{"transcript"')
-            obj = obj[0:index]
+        message_text = str(alternative)
+        message_text = message_text.replace('transcript: "', '')
+        index = message_text.find('"\n,"confidence"')  # indexは1(2文字目)
+        message_text = message_text[0:index]
+        if not message_text.find('"},{"transcript"') == -1:
+            index = message_text.find('"},{"transcript"')
+            message_text = message_text[0:index]
 
-        if len(obj) == 0:
-            continue
-        return obj
-    return ""
+        return message_text
+    return '#SILENT'
 
 
 def parse_args():
