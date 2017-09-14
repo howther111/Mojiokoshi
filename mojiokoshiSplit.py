@@ -7,7 +7,7 @@ import os
 import argparse
 
 # 環境音無いなら2048 小さければ4096 大きければ8192
-SPLIT_VOLUME = 2048
+SPLIT_VOLUME = 1024 * 4
 
 # 通常は441(0.01秒に一回チェック)
 CHECK_FRAME = 441
@@ -95,12 +95,12 @@ class Audio:
                 second = end / size
                 print(str(second) + '秒まで処理')
 
-            z1 = end - start
             check_silence = int(end + silence_size)
+            z1 = check_silence - start
             z2 = np.absolute(y[end:check_silence])
 
             if self.is_split(y[end:self.nframe], size):
-                if self.is_silence(z2) | z1 > max_size:
+                if self.is_silence(z2) or z1 > max_size:
                     segment_points.append(end + int(silence_size / 2))
                     count = count + 1
 
@@ -147,6 +147,8 @@ def parse_args():
                 help='各分割ファイルの最小サイズ, 単位: 秒, デフォルト: 2.0s')
     parser.add_argument('-mt', action='store', type=float, dest='max_time', default=10.0,
                 help='各分割ファイルの最大サイズ, 単位: 秒, デフォルト: 10.0s')
+    parser.add_argument('-noise', action='store', type=int, dest='noise', default=2,
+                help='ノイズの大きさ, 単位: 1024, デフォルト: 2')
 
     parser.add_argument('-st', action='store', type=float, dest='slience_time', default=1,
                 help='無音ターム, 単位: 秒, デフォルト: 1s')
@@ -168,6 +170,8 @@ try:
     # 格納用フォルダ作成
     dir_name = args.file_name.replace(".wav", "")
     os.mkdir(dir_name)
+
+    SPLIT_VOLUME = args.noise * 1024
 
     if args.type == "equal":
         segment_points = audio.split_equal(audio_data, args.split_num)

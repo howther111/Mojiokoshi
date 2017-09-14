@@ -26,16 +26,16 @@ test1_text.txt
 ③文字起こし処理
 
 【PyCharm】
-C:\Users\atsuk\PycharmProjects\study\mojiokoshiSplit.py
--i meiga8.wav -type optional -t 2.0 -st 0.2 -mt 4.0
+C:\Users\atsuk\PycharmProjects\studyy\mojiokoshi\mojiokoshiSplit.py
+-i meiga8.wav -type optional -t 1.0 -st 0.2 -mt 5.0 -noise 4
 
-C:\Users\atsuk\PycharmProjects\study\mojiokoshiWrite.py
+C:\Users\atsuk\PycharmProjects\studyy\mojiokoshi\mojiokoshiWrite.py
 -i meiga8 -n 883
 
 【コマンドライン】
-cd C:\Users\atsuk\PycharmProjects\study
-python mojiokoshiSplit.py -i meiga8.wav -type optional -t 2.0 -st 0.2 -mt 4.0
-python mojiokoshiWrite.py -i meiga8 -n 883
+cd C:\Users\atsuk\PycharmProjects\study\mojiokoshi
+python mojiokoshiSplit.py -i Test0080.wav -type optional -t 1.0 -st 0.2 -mt 5.0 -noise 4
+python mojiokoshiWrite.py -i 170824_0078 -n 10
 
 【料金】
 Google Cloud Speech API
@@ -49,7 +49,7 @@ wav 1時間1000円が原価
 
 【サービス】
 成果物：テキストファイル
-基本料金：2000円
+基本料金：2000円(作業時間30分)
 追加料金：1時間以上の場合：15分ごとに+500円（切り上げ）
 
 【注意事項】
