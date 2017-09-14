@@ -26,13 +26,13 @@ def recognize(file_number):
     else:
         file_num_str = '-' + str(file_number)
 
-    if SILENT_CHECK:
-        voice_file = VOICE_REC_PATH + file_num_str + '.wav'
-        print(voice_file + ' recognizing...')
-        f = open(voice_file, 'rb')
-        voice = f.read()
-        f.close()
+    voice_file = VOICE_REC_PATH + file_num_str + '.wav'
+    print(voice_file + ' recognizing...')
+    f = open(voice_file, 'rb')
+    voice = f.read()
+    f.close()
 
+    if SILENT_CHECK:
         # read wav file
         wav = wave.open(voice_file, "r")
         # move to head of the audio file
