@@ -107,7 +107,7 @@ def current_milli_time():
 if __name__ == '__main__':
     args = parse_args()
     VOICE_REC_PATH = './' + args.file_name + '/' + args.file_name
-    FILE_NUM = args.split_num
+    FILE_NUM = args.split_num + 1
 
     for file_number in range(FILE_NUM):
         t0 = current_milli_time()
