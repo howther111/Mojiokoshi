@@ -164,6 +164,11 @@ try:
     audio = Audio(args.file_name)
     audio_data = audio.read()
     # time = audio.audio_time()
+
+    # 格納用フォルダ作成
+    dir_name = args.file_name.replace(".wav", "")
+    os.mkdir(dir_name)
+
     if args.type == "equal":
         segment_points = audio.split_equal(audio_data, args.split_num)
     elif args.type == "optional":

@@ -19,13 +19,11 @@ mojiokoshiWrite.py
 mojiokoshiWrite.py
 ↓
 文章出力
-answer.txt
+test1_text.txt
 
 ①音声ファイルの準備（44100Hz, wav形式）
-②フォルダの作成（test1.wavならtest1）
-③answer.txt準備（空白化）
-④分割処理（分割うまくできているかチェック）
-⑤文字起こし処理
+②分割処理（分割うまくできているかチェック）
+③文字起こし処理
 
 【PyCharm】
 C:\Users\atsuk\PycharmProjects\study\mojiokoshiSplit.py
