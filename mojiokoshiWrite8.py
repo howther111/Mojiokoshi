@@ -6,7 +6,6 @@ import argparse
 import base64
 import json
 import codecs
-import os
 import sys
 import io
 
@@ -32,6 +31,9 @@ def parse_args():
 
     parser.add_argument('-n', action='store', type=int, dest='split_num', default=1,
                 help='ファイル数を設定, デフィルト: 1')
+
+    parser.add_argument('-s', action='store', type=int, dest='start_num', default=0,
+                help='スタートファイル番号を設定, デフィルト: 0')
 
     results = parser.parse_args()
     return results
@@ -61,7 +63,7 @@ def write_down(speech_file):
 
 #    speech_file = speech_file.replace("/", "\\")
 
-    with io.open(speech_file, 'rb') as speech:
+    with open(speech_file, 'rb') as speech:
         speech_content = base64.b64encode(speech.read())
 
     service = get_speech_service()
@@ -76,9 +78,31 @@ def write_down(speech_file):
                 'content': speech_content.decode('UTF-8')
                 }
             })
-    response = service_request.execute()
+
+    response = ''
+    try:
+        response = service_request.execute()
+    except discovery.errors.HttpError:
+        response = '#HTTP ERROR'
+
     f = codecs.open(args.file_name + '_text.txt', 'a', 'utf-8')  # 書き込みモードで開く
-    f.write(json.dumps(response, ensure_ascii=False))  # 引数の文字列をファイルに書き込む
+    res = json.dumps(response, ensure_ascii=False)
+    ans = ""
+    number = "(" + speech_file[-9:-4] + ")"
+    if res == "{}":
+        ans = "[NO MESSAGE]" + number + "    "
+    elif res == "#HTTP ERROR":
+        ans = "[HTTP ERROR]" + number + "    "
+    else:
+        res = res.replace('{"results": [{"alternatives": [{"transcript": "', '')
+        index = res.find('", "confidence"')  # indexは1(2文字目)
+        res = res[0:index]
+        if not res.find('"}, {"transcript"') == -1:
+            index = res.find('"}, {"transcript"')
+            res = res[0:index]
+        ans = res + number + "    "
+
+    f.write(ans)  # 引数の文字列をファイルに書き込む
     f.close()  # ファイルを閉じる
     print(json.dumps(response, ensure_ascii=False))
 
@@ -86,18 +110,20 @@ def write_down(speech_file):
 if __name__ == '__main__':
     args = parse_args()
     VOICE_REC_PATH = './' + args.file_name + '/' + args.file_name
-    FILE_NUM = args.split_num + 1
+    FILE_NUM = args.split_num + 1 - args.start_num
+    START_NUM = args.start_num
 
     for file_number in range(FILE_NUM):
+        set_number = file_number + START_NUM
         file_num_str = ''
-        if file_number < 10:
-            file_num_str = '-0000' + str(file_number)
-        elif file_number < 100:
-            file_num_str = '-000' + str(file_number)
-        elif file_number < 1000:
-            file_num_str = '-00' + str(file_number)
-        elif file_number < 10000:
-            file_num_str = '-0' + str(file_number)
+        if set_number < 10:
+            file_num_str = '-0000' + str(set_number)
+        elif set_number < 100:
+            file_num_str = '-000' + str(set_number)
+        elif set_number < 1000:
+            file_num_str = '-00' + str(set_number)
+        elif set_number < 10000:
+            file_num_str = '-0' + str(set_number)
         else:
             file_num_str = '-' + str(file_number)
 
